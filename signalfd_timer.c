@@ -61,6 +61,12 @@ int main(int argc, char **argv)
 	ssize_t s;
 	int sfd;
 
+	if ((argc != 2) && (argc != 4)) {
+		fprintf(stderr, "%s init-secs [interval-secs exp]\n",
+				argv[0]);
+		exit(EXIT_FAILURE);
+	}
+
 	memset(&sev, 0, sizeof(sev));
 	sev.sigev_notify = SIGEV_SIGNAL;
 	sev.sigev_signo = SIGRTMIN;
@@ -78,7 +84,7 @@ int main(int argc, char **argv)
 	if (sfd == -1)
 		handle_error("signalfd");
 
-	its.it_value.tv_sec = 1;
+	its.it_value.tv_sec = atoi(argv[1]);
 	its.it_value.tv_nsec = 0;
 	its.it_interval.tv_sec = 1;
 	its.it_interval.tv_nsec = 0;
@@ -89,9 +95,10 @@ int main(int argc, char **argv)
 
 	/* Block until timer expiration */
 	while (1) {
-	s = read(sfd, &fdsi, sizeof(struct signalfd_siginfo));
-	if (s != sizeof(struct signalfd_siginfo))
-		handle_error("read");
+		s = read(sfd, &fdsi, sizeof(struct signalfd_siginfo));
+		if (s != sizeof(struct signalfd_siginfo))
+			handle_error("read");
+		
 		printf("expired\n");
 	}
 
